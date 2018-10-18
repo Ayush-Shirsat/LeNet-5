@@ -27,14 +27,28 @@ box = regionprops(composition,'Area', 'BoundingBox');
 len = length(box);
 
 bb = struct2dataset(box);
+
+Area = bb(1:length(bb),1);
+Area = dataset2cell(Area);
+Area = Area(2:length(Area),1);
+Area = cell2mat(Area);
+
+Coordinates = bb(1:length(bb),2);
+Coordinates = dataset2cell(Coordinates);
+Coordinates = Coordinates(2:length(Coordinates),1);
+Coordinates = cell2mat(Coordinates);
+
+data = [Area Coordinates];
+data = sortrows(data, 3, 'ascend');
 % figure,
 imshow(gray);
 hold on
 count = 0;
 for c = 1:len
-    if bb.Area(c) >= 200
+    if data(c,1) >= 200
         count = count + 1;
-        bx = bb.BoundingBox(c,1:4);
+        bx = data(c,2:5);
+%         disp(bx);
         rectangle('Position',bx);
         crop = imcrop(gray,bx);
         crop = imresize(crop,[28,28]);
@@ -48,4 +62,4 @@ fileFolder = 'C:\Users\Ayush Shirsat\Desktop\Mini_proj';
 dirOutput = dir(fullfile(fileFolder,'*.jpg')); % *.jpg indicates 
 fileNames = {dirOutput.name};
 figure,
-montage(fileNames);
+montage(fileNames,'Size',[10 15]);
