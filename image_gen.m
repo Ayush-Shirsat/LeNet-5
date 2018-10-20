@@ -2,7 +2,7 @@ clear all
 close all
 clc
 
-img = imread('dataset.PNG');
+img = imread('dollar_train.jpg');
 % imshow(img);
 
 gray = rgb2gray(img);
@@ -11,15 +11,15 @@ gray = rgb2gray(img);
 bin = imbinarize(gray);
 % imshow(bin);
 
-BW = edge(gray, 'Canny', 0.4);
-%imshow(BW);
+BW = edge(gray, 'Canny', 0.10);
+% imshow(BW);
 
 fill = imfill(BW, 'holes');
 % figure,
 % imshow(fill);
 
-se1 = strel('line',3,0);
-se2 = strel('line',3,90);
+se1 = strel('line',2,0);
+se2 = strel('line',2,90);
 composition = imdilate(fill,[se1 se2],'full');
 % imshow(composition);
 
@@ -45,21 +45,21 @@ imshow(gray);
 hold on
 count = 0;
 for c = 1:len
-    if data(c,1) >= 200
+    if data(c,1) >= 100
         count = count + 1;
         bx = data(c,2:5);
-%         disp(bx);
         rectangle('Position',bx);
         crop = imcrop(gray,bx);
         crop = imresize(crop,[28,28]);
-        imwrite(crop,strcat('img',num2str(count),'.jpg'));
+        mm=num2str(count);
+        if count < 10
+            mm1=strcat('00',mm);
+        elseif count < 100
+            mm1=strcat('0',mm);
+        else 
+            mm1=strcat(mm);
+        end
+        imwrite(crop,strcat('img',num2str(mm1),'.jpg'));
     end
 end
 disp(count);
-
-%show montage
-fileFolder = 'C:\Users\Ayush Shirsat\Desktop\Mini_proj';
-dirOutput = dir(fullfile(fileFolder,'*.jpg')); % *.jpg indicates 
-fileNames = {dirOutput.name};
-figure,
-montage(fileNames,'Size',[10 15]);
