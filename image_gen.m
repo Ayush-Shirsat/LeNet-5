@@ -1,7 +1,4 @@
-clear all
-close all
-clc
-
+% Importing all handwritten characters
 img1 = imresize(imread('dollar_train.jpg'), [820,680]);
 img2 = imresize(imread('Pound_train.PNG'), [820,680]);
 img3 = imresize(imread('Euro_train.PNG'), [820,680]);
@@ -20,14 +17,15 @@ BW = edge(gray, 'Canny', 0.10);
 % imshow(BW);
 
 fill = imfill(BW, 'holes');
-% figure,
 % imshow(fill);
 
+% image dilation
 se1 = strel('line',2,0);
 se2 = strel('line',2,90);
 composition = imdilate(fill,[se1 se2],'full');
 % imshow(composition);
 
+% Bounding boxes for all characters
 box = regionprops(composition,'Area', 'BoundingBox');
 len = length(box);
 
@@ -44,9 +42,15 @@ Coordinates = Coordinates(2:length(Coordinates),1);
 Coordinates = cell2mat(Coordinates);
 
 data = [Area Coordinates];
+
+% Sorting dataset
 data = sortrows(data, 3, 'ascend');
-% figure,
 imshow(gray);
+
+% Rest of the code is used to read character pixels on gray scale image as per bounding boxes
+% This treats each bounding box as an image
+% All images are rotated by +5, -5, +10, -10 degrees and saved to increase dataset size
+% Images are saved in the format of imgxxxxx.jpg
 hold on
 count = 0;
 for c = 1:len
@@ -180,3 +184,7 @@ for c = 1:len
     end
 end
 disp(count);
+
+% Total hadwritten characters 400 for each class
+% Total images generated 10000 
+% Total classes:5 hence, 2000 images per class
