@@ -1,23 +1,24 @@
 # Code still incomplete
 
 import tensorflow as tf
-# import Keras
-import keras
+#KERAS
 from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation, Flatten
 from keras.layers.convolutional import Convolution2D, MaxPooling2D
-from keras.optimizers import SGD,adam, Adadelta # Checking which one is better
+from keras.optimizers import SGD,RMSprop,adam
 from keras.utils import np_utils
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
 import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import theano
 from PIL import Image
-# importing SKLEARN
+from numpy import *
+# SKLEARN
 from sklearn.utils import shuffle
-from sklearn import cross_validation
-from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import train_test_split
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -48,24 +49,23 @@ im1 = array(Image.open(path2 + imlist[0])) # open one image to get size
 m,n = im1.shape[0:2] # get the size of the images
 imnbr = len(imlist) # get the number of images
 
-# Create matrix to store all flattened images
+# create matrix to store all flattened images
 immatrix = array([array(Image.open(path2 + im2)).flatten()
               for im2 in imlist],'f')
-
-# Labelling the dataset
-label=np.ones((num_samples,),dtype = int)
+                
+label = np.ones((num_samples,),dtype = int)
 label[0:2000] = 0
 label[2000:4000] = 1
 label[4000:6000] = 2
 label[6000:8000] = 3
 label[8000:10000] = 4
 
-# Shuffling the dataset 
 data,Label = shuffle(immatrix,label, random_state = 4)
-train_data = (data,label)
+#data = immatrix
+#Label = label
 
 #batch_size to train
-batch_size = 50
+batch_size = 256
 # number of output classes
 nb_classes = 5
 # number of epochs to train
@@ -79,10 +79,12 @@ nb_pool = 2
 # convolution kernel size
 nb_conv = 5
 
+#(x, y) = (train_data[0],train_data[1])
 (x, y) = (data, Label)
 
 
-# Split x and y into training and testing sets
+#split x and y into training and testing sets
+
 X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state = 4)
 
 X_train = X_train.reshape(X_train.shape[0], img_rows, img_cols, 1)
@@ -91,18 +93,16 @@ X_test = X_test.reshape(X_test.shape[0], img_rows, img_cols, 1)
 X_train = X_train.astype('float32')
 X_test = X_test.astype('float32')
 
-# Normalization
 X_train /= 255
 X_test /= 255
 
-# Convert class vectors to binary class matrices
+# convert class vectors to binary class matrices
 Y_train = np_utils.to_categorical(y_train, nb_classes)
 Y_test = np_utils.to_categorical(y_test, nb_classes)
 
-# Creating a Convolution Neural Network
 model = Sequential()
 model.add(Convolution2D(nb_filters, kernel_size=(nb_conv, nb_conv), activation='relu', input_shape=(img_rows, img_cols, 1)))
-model.add(Convolution2D(nb_filters*2, (nb_conv, nb_conv), activation='relu'))
+#model.add(Convolution2D(nb_filters*2, (nb_conv, nb_conv), activation='relu'))
 model.add(MaxPooling2D(pool_size=(nb_pool, nb_pool)))
 model.add(Dropout(0.25))
 model.add(Flatten())
@@ -110,11 +110,10 @@ model.add(Dense(128, activation='relu'))
 model.add(Dropout(0.5))
 model.add(Dense(nb_classes, activation='softmax'))
 
-# Compiling the network 
 model.compile(loss='categorical_crossentropy', optimizer = 'Adadelta', metrics = ['accuracy'])
-           
+         
 with tf.device('/GPU:0'):       
-  hist = model.fit(X_train, Y_train, batch_size = batch_size, epochs = nb_epoch, verbose = 1, validation_split = 0.25, shuffle = False)
+  hist = model.fit(X_train, Y_train, batch_size = batch_size, epochs = nb_epoch, verbose = 1, validation_split = 0.25, shuffle = True)
 
 # visualizing losses and accuracy
 
@@ -124,22 +123,22 @@ with tf.device('/GPU:0'):
   val_acc=hist.history['val_acc']
   xc = range(nb_epoch)
 
-# Visualizing Test score and accuracy
   score = model.evaluate(X_test, Y_test, verbose=0) # accuracy check
   print('Test score:', score[0])
   print('Test accuracy:', score[1])
-  print(model.predict_classes(X_test[45:50])) # Picks images 45-50 from test data
-  print(Y_test[45:50]) 
+  print(model.predict_classes(X_test[40:50]))
+  print(Y_test[40:50])
 
 # Confusion Matrix
+
 from sklearn.metrics import classification_report,confusion_matrix
 
 Y_pred = model.predict(X_test)
-#print(Y_pred)
+print(Y_pred)
 y_pred = np.argmax(Y_pred, axis=1)
-#print(y_pred)  
+print(y_pred)  
 y_pred = model.predict_classes(X_test)
-#print(y_pred) 
+print(y_pred) 
 
 p = model.predict_proba(X_test) # to predict probability
 
