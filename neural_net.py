@@ -1,9 +1,12 @@
+# Code still incomplete
+
 import tensorflow as tf
+# import Keras
 import keras
 from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation, Flatten
 from keras.layers.convolutional import Convolution2D, MaxPooling2D
-from keras.optimizers import SGD,adam
+from keras.optimizers import SGD,adam, Adadelta # Checking which one is better
 from keras.utils import np_utils
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,7 +14,7 @@ import matplotlib
 import os
 import theano
 from PIL import Image
-# SKLEARN
+# importing SKLEARN
 from sklearn.utils import shuffle
 from sklearn import cross_validation
 from sklearn.cross_validation import train_test_split
@@ -45,10 +48,11 @@ im1 = array(Image.open(path2 + imlist[0])) # open one image to get size
 m,n = im1.shape[0:2] # get the size of the images
 imnbr = len(imlist) # get the number of images
 
-# create matrix to store all flattened images
+# Create matrix to store all flattened images
 immatrix = array([array(Image.open(path2 + im2)).flatten()
               for im2 in imlist],'f')
-                
+
+# Labelling the dataset
 label=np.ones((num_samples,),dtype = int)
 label[0:2000] = 0
 label[2000:4000] = 1
@@ -56,13 +60,9 @@ label[4000:6000] = 2
 label[6000:8000] = 3
 label[8000:10000] = 4
 
+# Shuffling the dataset 
 data,Label = shuffle(immatrix,label, random_state = 4)
-#data = immatrix
-#Label = label
 train_data = (data,label)
-
-#print(train_data[0].shape)
-#print(train_data[1].shape)
 
 #batch_size to train
 batch_size = 50
@@ -79,12 +79,10 @@ nb_pool = 2
 # convolution kernel size
 nb_conv = 5
 
-#(x, y) = (train_data[0],train_data[1])
 (x, y) = (data, Label)
 
 
-#split x and y into training and testing sets
-
+# Split x and y into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state = 4)
 
 X_train = X_train.reshape(X_train.shape[0], img_rows, img_cols, 1)
@@ -93,13 +91,15 @@ X_test = X_test.reshape(X_test.shape[0], img_rows, img_cols, 1)
 X_train = X_train.astype('float32')
 X_test = X_test.astype('float32')
 
+# Normalization
 X_train /= 255
 X_test /= 255
 
-# convert class vectors to binary class matrices
+# Convert class vectors to binary class matrices
 Y_train = np_utils.to_categorical(y_train, nb_classes)
 Y_test = np_utils.to_categorical(y_test, nb_classes)
 
+# Creating a Convolution Neural Network
 model = Sequential()
 model.add(Convolution2D(nb_filters, kernel_size=(nb_conv, nb_conv), activation='relu', input_shape=(img_rows, img_cols, 1)))
 model.add(Convolution2D(nb_filters*2, (nb_conv, nb_conv), activation='relu'))
@@ -109,26 +109,10 @@ model.add(Flatten())
 model.add(Dense(128, activation='relu'))
 model.add(Dropout(0.5))
 model.add(Dense(nb_classes, activation='softmax'))
-'''
-model.add(Convolution2D(nb_filters, (nb_conv, nb_conv), padding='same', input_shape=(img_rows, img_cols, 1)))
 
-convout1 = Activation('sigmoid')
-model.add(convout1)
-model.add(Convolution2D(nb_filters, (nb_conv, nb_conv)))
-convout2 = Activation('relu')
-model.add(convout2)
-model.add(MaxPooling2D(pool_size=(nb_pool, nb_pool)))
-model.add(Dropout(0.5))
-
-model.add(Flatten())
-model.add(Dense(128))
-model.add(Activation('relu'))
-model.add(Dropout(0.5))
-model.add(Dense(nb_classes)) 
-model.add(Activation('softmax')) '''
+# Compiling the network 
 model.compile(loss='categorical_crossentropy', optimizer = 'Adadelta', metrics = ['accuracy'])
-
-#hist = model.fit(X_train, Y_train, batch_size = batch_size, epochs = nb_epoch, verbose=1, validation_data=(X_test, Y_test))            
+           
 with tf.device('/GPU:0'):       
   hist = model.fit(X_train, Y_train, batch_size = batch_size, epochs = nb_epoch, verbose = 1, validation_split = 0.25, shuffle = False)
 
@@ -140,14 +124,14 @@ with tf.device('/GPU:0'):
   val_acc=hist.history['val_acc']
   xc = range(nb_epoch)
 
+# Visualizing Test score and accuracy
   score = model.evaluate(X_test, Y_test, verbose=0) # accuracy check
   print('Test score:', score[0])
   print('Test accuracy:', score[1])
-  print(model.predict_classes(X_test[45:50]))
-  print(Y_test[45:50])
+  print(model.predict_classes(X_test[45:50])) # Picks images 45-50 from test data
+  print(Y_test[45:50]) 
 
 # Confusion Matrix
-
 from sklearn.metrics import classification_report,confusion_matrix
 
 Y_pred = model.predict(X_test)
