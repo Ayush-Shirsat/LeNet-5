@@ -1,3 +1,5 @@
+# Code still incomplete
+
 #KERAS
 import keras
 from keras.models import Sequential
@@ -152,13 +154,3 @@ p = model.predict_proba(X_test) # to predict probability
 target_names = ['class 0(Dollar)', 'class 1(Pound)', 'class 2(Euro)', 'class 3(Indian Rupee)', 'class 4(Yen)']
 #print(classification_report(np.argmax(Y_test,axis=1), y_pred,target_names=target_names))
 print(confusion_matrix(np.argmax(Y_test,axis=1), y_pred))
-
-# saving weights
-
-'''fname = "weights-Test-CNN.txt"
-model.save_weights(fname,overwrite=True)
-
-# Loading weights
-
-fname = "weights-Test-CNN.txt"
-model.load_weights(fname)'''
