@@ -1,5 +1,3 @@
-# Code still incomplete
-
 import tensorflow as tf
 #KERAS
 from keras.models import Sequential
@@ -61,19 +59,18 @@ label[6000:8000] = 3
 label[8000:10000] = 4
 
 data,Label = shuffle(immatrix,label, random_state = 4)
-#data = immatrix
-#Label = label
 
 #batch_size to train
 batch_size = 256
 # number of output classes
 nb_classes = 5
 # number of epochs to train
-nb_epoch = 5
+nb_epoch = 100
 
 
 # number of convolutional filters to use
-nb_filters = 32
+nb_filters_1 = 20
+nb_filters_2 = 50
 # size of pooling area for max pooling
 nb_pool = 2
 # convolution kernel size
@@ -101,27 +98,31 @@ Y_train = np_utils.to_categorical(y_train, nb_classes)
 Y_test = np_utils.to_categorical(y_test, nb_classes)
 
 model = Sequential()
-model.add(Convolution2D(nb_filters, kernel_size=(nb_conv, nb_conv), activation='relu', input_shape=(img_rows, img_cols, 1)))
-#model.add(Convolution2D(nb_filters*2, (nb_conv, nb_conv), activation='relu'))
-model.add(MaxPooling2D(pool_size=(nb_pool, nb_pool)))
-model.add(Dropout(0.25))
+
+model.add(Convolution2D(nb_filters_1, kernel_size = (nb_conv, nb_conv), activation='relu', input_shape=(img_rows, img_cols, 1)))
+model.add(MaxPooling2D(pool_size = (nb_pool, nb_pool), strides = (2, 2)))
+
+model.add(Convolution2D(nb_filters_2, kernel_size = (nb_conv, nb_conv), activation='relu'))
+model.add(MaxPooling2D(pool_size = (nb_pool, nb_pool), strides = (2, 2)))
+
 model.add(Flatten())
-model.add(Dense(128, activation='relu'))
-model.add(Dropout(0.5))
+model.add(Dense(500, activation='relu'))
+
 model.add(Dense(nb_classes, activation='softmax'))
 
-model.compile(loss='categorical_crossentropy', optimizer = 'Adadelta', metrics = ['accuracy'])
+opt = SGD(lr = 0.01)
+model.compile(loss='categorical_crossentropy', optimizer = opt, metrics = ['accuracy'])
          
 with tf.device('/GPU:0'):       
   hist = model.fit(X_train, Y_train, batch_size = batch_size, epochs = nb_epoch, verbose = 1, validation_split = 0.25, shuffle = True)
 
 # visualizing losses and accuracy
 
-  train_loss=hist.history['loss']
-  val_loss=hist.history['val_loss'] 
-  train_acc=hist.history['acc']
-  val_acc=hist.history['val_acc']
-  xc = range(nb_epoch)
+  train_loss = hist.history['loss']
+  val_loss = hist.history['val_loss'] 
+  train_acc = (hist.history['acc'] * 100)
+  val_acc = (hist.history['val_acc'] * 100)
+ # xc = range(nb_epoch)
 
   score = model.evaluate(X_test, Y_test, verbose=0) # accuracy check
   print('Test score:', score[0])
@@ -147,10 +148,10 @@ print(confusion_matrix(np.argmax(Y_test,axis=1), y_pred))
 
 # saving weights
 
-'''fname = "weights-Test-CNN.txt"
+'''fname = "weights-Test-CNN.hdf5"
 model.save_weights(fname,overwrite=True)
 
 # Loading weights
 
-fname = "weights-Test-CNN.txt"
+fname = "weights-Test-CNN.hdf5"
 model.load_weights(fname)'''
