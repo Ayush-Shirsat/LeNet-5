@@ -28,8 +28,7 @@ img_rows, img_cols = 28, 28
 # number of channels
 img_channels = 1
 
-path1 = '/home/ece-student/EC_601/Mini_Proj_2/mini_proj_2/dataset/'    #path of folder of images    
-path2 = '/home/ece-student/EC_601/Mini_Proj_2/mini_proj_2/dataset_gray/'  #path of folder to save images    
+path1 = '/home/ece-student/EC_601/Mini_Proj_2/mini_proj_2/dataset/'    #path of folder of images      
 
 listing = os.listdir(path1) 
 num_samples = size(listing)
@@ -39,17 +38,17 @@ for file in listing:
     im = Image.open(path1 + file)   
     img = im.resize((img_rows,img_cols))
     gray = img.convert('L')          
-    gray.save(path2 +  file, "JPEG")
+    gray.save(path1 +  file, "JPEG")
 
-imlist = os.listdir(path2)
+imlist = os.listdir(path1)
 imlist = sorted(imlist)
 
-im1 = array(Image.open(path2 + imlist[0])) # open one image to get size
+im1 = array(Image.open(path1 + imlist[0])) # open one image to get size
 m,n = im1.shape[0:2] # get the size of the images
 imnbr = len(imlist) # get the number of images
 
 # create matrix to store all flattened images
-immatrix = array([array(Image.open(path2 + im2)).flatten()
+immatrix = array([array(Image.open(path1 + im2)).flatten()
               for im2 in imlist],'f')
                 
 label = np.ones((num_samples,),dtype = int)
@@ -66,7 +65,7 @@ batch_size = 256
 # number of output classes
 nb_classes = 5
 # number of epochs to train
-nb_epoch = 1
+nb_epoch = 100
 
 
 # number of convolutional filters to use
@@ -77,7 +76,6 @@ nb_pool = 2
 # convolution kernel size
 nb_conv = 5
 
-#(x, y) = (train_data[0],train_data[1])
 (x, y) = (data, Label)
 
 
@@ -98,6 +96,7 @@ X_test /= 255
 Y_train = np_utils.to_categorical(y_train, nb_classes)
 Y_test = np_utils.to_categorical(y_test, nb_classes)
 
+# Implementing a LeNet model
 model = Sequential()
 
 model.add(Convolution2D(nb_filters_1, kernel_size = (nb_conv, nb_conv), activation='relu', input_shape=(img_rows, img_cols, 1)))
@@ -114,25 +113,22 @@ model.add(Dense(nb_classes, activation='softmax'))
 opt = SGD(lr = 0.01)
 model.compile(loss='categorical_crossentropy', optimizer = opt, metrics = ['accuracy'])
          
-with tf.device('/GPU:0'):       
-  hist = model.fit(X_train, Y_train, batch_size = batch_size, epochs = nb_epoch, verbose = 1, validation_split = 0.25, shuffle = True)
+      
+hist = model.fit(X_train, Y_train, batch_size = batch_size, epochs = nb_epoch, verbose = 1, validation_split = 0.25, shuffle = True)
 
 # visualizing losses and accuracy
 
-  train_loss = hist.history['loss']
-  val_loss = hist.history['val_loss'] 
-  train_acc = (hist.history['acc'] * 100)
-  val_acc = (hist.history['val_acc'] * 100)
- # xc = range(nb_epoch)
+train_loss = hist.history['loss']
+val_loss = hist.history['val_loss'] 
+train_acc = (hist.history['acc'])
+val_acc = (hist.history['val_acc'])
+# xc = range(nb_epoch)
 
-  score = model.evaluate(X_test, Y_test, verbose=0) # accuracy check
-  print('Test score:', score[0])
-  print('Test accuracy:', score[1])
-  print(model.predict_classes(X_test[40:50]))
-  print(Y_test[40:50])
+score = model.evaluate(X_test, Y_test, verbose=0) # accuracy check
+print('\nTest score:', score[0])
+print('Test accuracy:', score[1])
 
 # Confusion Matrix
-
 from sklearn.metrics import classification_report,confusion_matrix
 
 Y_pred = model.predict(X_test)
@@ -143,8 +139,7 @@ y_pred = model.predict_classes(X_test)
 #print(y_pred) 
 
 p = model.predict_proba(X_test) # to predict probability
-
-target_names = ['class 0(Dollar)', 'class 1(Pound)', 'class 2(Euro)', 'class 3(Indian Rupee)', 'class 4(Yen)']
+print('\nConfusion Matrix')
 print(confusion_matrix(np.argmax(Y_test,axis=1), y_pred))
 
 # serialize model to JSON
