@@ -5,6 +5,7 @@ from keras.layers.core import Dense, Dropout, Activation, Flatten
 from keras.layers.convolutional import Convolution2D, MaxPooling2D
 from keras.optimizers import SGD,RMSprop,adam
 from keras.utils import np_utils
+from keras.models import model_from_json
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -65,7 +66,7 @@ batch_size = 256
 # number of output classes
 nb_classes = 5
 # number of epochs to train
-nb_epoch = 100
+nb_epoch = 1
 
 
 # number of convolutional filters to use
@@ -135,23 +136,24 @@ with tf.device('/GPU:0'):
 from sklearn.metrics import classification_report,confusion_matrix
 
 Y_pred = model.predict(X_test)
-print(Y_pred)
+#print(Y_pred)
 y_pred = np.argmax(Y_pred, axis=1)
-print(y_pred)  
+#print(y_pred)  
 y_pred = model.predict_classes(X_test)
-print(y_pred) 
+#print(y_pred) 
 
 p = model.predict_proba(X_test) # to predict probability
 
 target_names = ['class 0(Dollar)', 'class 1(Pound)', 'class 2(Euro)', 'class 3(Indian Rupee)', 'class 4(Yen)']
 print(confusion_matrix(np.argmax(Y_test,axis=1), y_pred))
 
-# saving weights
-
-'''fname = "weights-Test-CNN.hdf5"
-model.save_weights(fname,overwrite=True)
-
-# Loading weights
-
-fname = "weights-Test-CNN.hdf5"
-model.load_weights(fname)'''
+# serialize model to JSON
+model_json = model.to_json()
+with open("model.json", "w") as json_file:
+    json_file.write(model_json)
+# serialize weights to HDF5
+model.save_weights("model.h5")
+print("Saved model to disk")
+ 
+np.save('X_test', X_test)
+np.save('Y_test', Y_test)
