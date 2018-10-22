@@ -30,19 +30,25 @@ print("Loaded model from disk")
 
 X_test = np.load('X_test.npy')
 Y_test = np.load('Y_test.npy')
+target_names = ['Dollar', 'Pound', 'Euro', 'Indian Rupee', 'Yen']
 
 # evaluate loaded model on test data
-loaded_model.compile(loss='binary_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
+opt = SGD(lr = 0.01)
+loaded_model.compile(loss='categorical_crossentropy', optimizer = opt, metrics = ['accuracy'])
 score = loaded_model.evaluate(X_test, Y_test, verbose=0) # accuracy check
-print('Test score:', score[0])
+print('\nTest score:', score[0])
 print('Test accuracy:', score[1]*100, '%')
-print('There are 2000 images shuffled for testing, how many do you want to test?')
+print('\nThere are 2000 images shuffled for testing, how many do you want to test?')
 num = input('Number of images to test: ')
-
+print('\nConfidences are as follows:')
+print('[Dollar	Pound	Euro	Indian Rupee	Yen]')
 for count in range(int(num)):
-	value = input('Input random number between 0 and 2000: ')
+	value = input('\nInput random number between 0 and 2000: ')
 	value = int(value)
-	print('Predicted value: ')
-	print(loaded_model.predict_classes(X_test[value:value+1]))
-	print('Expected value: ')
-	print(Y_test[value])
+	if 0 <= value < 2000: 
+		pred = loaded_model.predict_classes(X_test[value:value+1])
+		print('\n\nPredicted value: ', target_names[pred[0]])
+		print('Expected value: ', target_names[np.argmax(Y_test[value])])
+		print('Confidences: ', loaded_model.predict(X_test[value:value+1]))
+	else:
+		print('Input number out of test range')
