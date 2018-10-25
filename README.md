@@ -15,6 +15,8 @@
 
 *Scikit-learn 0.20.0*
 
+*MATLAB 2018a*
+
 ## Dataset
 
 There are 5 classes (or handwritten symbols) to distinguish namely Dollar, Pound, Euro, Indian Rupee and Yen.
