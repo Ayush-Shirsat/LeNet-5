@@ -47,7 +47,7 @@ Training loss: 0.0157
 
 Training accuracy: 99.72%
 
-Validation loss: 0.0204
+Validation loss: 0.0129
 
 Validation accuracy: 99.45%
 
