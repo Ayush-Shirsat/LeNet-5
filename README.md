@@ -26,6 +26,7 @@ Images were generated using MATLAB. 400 symbols (for each class) were written on
 Total images generated: 10000 (2000 for each class)
 
 Link to dataset: https://drive.google.com/open?id=1jbGHiqryq0917xHMBEDg51pBkrqeAaCX (use @bu.edu to access)
+or via kaggle: https://www.kaggle.com/ayush3496/handwritten-currency-symbols
 
 ## Neural Net
 
